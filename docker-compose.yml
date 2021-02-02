@@ -1,0 +1,43 @@
+version: '3.6'
+
+x-postgresql-variables: &postgresql-variables
+  POSTGRES_HOST: "db"
+  POSTGRES_USER: "postgres"
+  POSTGRES_PASSWORD: "P@ssw0rd"
+  POSTGRES_DB: "site"
+  TZ: "Europe/Moscow"
+
+services:
+  crawler:
+    container_name: crawler
+    volumes:
+      - ./:/usr/src/app
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - db
+    environment: *postgresql-variables
+    networks:
+      - web-crawler-net
+  db:
+    image: postgres:11-alpine
+    container_name: db
+    ports:
+      - "5432:5432"
+    volumes:
+      - db:/var/lib/postgresql/data
+    environment: *postgresql-variables
+    networks:
+      - web-crawler-net
+
+networks:
+  web-crawler-net:
+    name: web-crawler-net
+
+volumes:
+  db:
+    driver: local
